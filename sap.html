@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<style>
+  html,body{margin:0; padding:0; overflow:hidden; height:100%; user-select:none}
+  /* gözle görülmez ama fareyi yakalayan katman (saydam pencerede tıklama geçirmemek için) */
+  body{background:rgba(255,122,47,.004)}
+  #sap{
+    position:absolute; inset:0;
+    background:linear-gradient(135deg,#ff7a2f,#c85a1a);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:3px;
+    cursor:pointer; opacity:.45;
+    transform:scale(.55);
+    transition:opacity .18s, transform .18s ease-out;
+    box-shadow:0 2px 10px rgba(0,0,0,.4);
+  }
+  #sap.ust, #sap.alt{flex-direction:row; gap:5px}
+  #sap.sol{border-radius:0 12px 12px 0; transform-origin:left center}
+  #sap.sag{border-radius:12px 0 0 12px; transform-origin:right center}
+  #sap.ust{border-radius:0 0 12px 12px; transform-origin:center top}
+  #sap.alt{border-radius:12px 12px 0 0; transform-origin:center bottom}
+  body:hover #sap{opacity:1; transform:scale(1)}
+  #sap.surukleniyor{opacity:1; transform:scale(1); border-radius:12px; cursor:grabbing}
+  #ok{color:#fff; transition:transform .2s}
+
+  /* olay parlaması: hatırlatma yaklaşıyor veya dışarıdan görev düştü */
+  @keyframes parla{
+    0%,100%{box-shadow:0 2px 10px rgba(0,0,0,.4), 0 0 0 0 rgba(255,122,47,.5)}
+    50%{box-shadow:0 2px 10px rgba(0,0,0,.4), 0 0 16px 5px rgba(255,122,47,.55)}
+  }
+  #sap.parla{animation:parla 1.6s ease-in-out infinite; opacity:.9}
+
+  /* aktif görev sayısı — yalnız hover'da görünür (küçük halde okunmuyor) */
+  #sayi{
+    display:none; color:#fff; pointer-events:none;
+    font:700 12px/1 "Segoe UI",system-ui,sans-serif;
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
+  }
+  body:hover #sap.sayili #sayi{display:block}
+</style>
+</head>
+<body>
+<div id="sap" class="sol" title="Liste — tıkla: aç/kapa · sürükle: taşı · sağ tık: ayarlar (Ctrl+Alt+L)">
+  <svg id="ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+  <span id="sayi"></span>
+</div>
+<script>
+  const sapEl = document.getElementById("sap");
+  const okEl = document.getElementById("ok");
+  let durum = { kenar: "sol", acik: false };
+
+  /* ok yönü: kapalıyken kenardan içeri bakar, açıkken tersine döner */
+  const TABAN = { sol: 0, sag: 180, ust: 90, alt: 270 };
+  function okCiz(){
+    sapEl.classList.remove("sol","sag","ust","alt");
+    sapEl.classList.add(durum.kenar);
+    okEl.style.transform = `rotate(${(TABAN[durum.kenar] ?? 0) + (durum.acik ? 180 : 0)}deg)`;
+  }
+  window.api.onSapRozet(r => {
+    const el = document.getElementById("sayi");
+    sapEl.classList.toggle("sayili", r.sayi > 0);
+    el.textContent = r.sayi > 9 ? "9+" : r.sayi;
+    sapEl.classList.toggle("parla", !!r.parla);
+  });
+  window.api.onSapAyar(a => { durum.kenar = a.kenar; durum.acik = a.acik; okCiz(); });
+  window.api.onPanelDurum(acik => { durum.acik = acik; okCiz(); });
+
+  /* tıkla = aç/kapa · sürükle = serbest taşı (bırakınca en yakın kenara yapışır) */
+  let basili = false, hareket = false, basX = 0, basY = 0;
+  sapEl.addEventListener("pointerdown", e => {
+    if (e.button !== 0) return;
+    basili = true; hareket = false; basX = e.screenX; basY = e.screenY;
+    sapEl.setPointerCapture(e.pointerId);
+  });
+  sapEl.addEventListener("pointermove", e => {
+    if (!basili) return;
+    if (Math.abs(e.screenX - basX) > 4 || Math.abs(e.screenY - basY) > 4) hareket = true;
+    if (hareket) {
+      sapEl.classList.add("surukleniyor");
+      window.api.sapTasi({ x: e.screenX, y: e.screenY });
+    }
+  });
+  sapEl.addEventListener("pointerup", () => {
+    if (!basili) return;
+    basili = false;
+    sapEl.classList.remove("surukleniyor");
+    if (hareket) window.api.sapBirak();
+    else window.api.panelToggle();
+  });
+  sapEl.addEventListener("contextmenu", e => { e.preventDefault(); window.api.sapMenu(); });
+</script>
+</body>
+</html>

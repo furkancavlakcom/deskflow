@@ -1,0 +1,10 @@
+# bağımlılıklar
+node_modules/
+
+# kişisel veri — repoya asla girmez
+veri.json
+ayar.json
+gorseller/
+
+# günlükler / geçici
+*.log

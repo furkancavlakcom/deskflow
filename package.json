@@ -1,0 +1,13 @@
+{
+  "name": "liste",
+  "version": "1.0.0",
+  "description": "Günlük yapılacaklar listesi",
+  "main": "main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^43.2.0"
+  }
+}
