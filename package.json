@@ -1,7 +1,7 @@
 {
-  "name": "liste",
+  "name": "deskflow",
   "version": "1.0.0",
-  "description": "Günlük yapılacaklar listesi",
+  "description": "Yerel günlük yapılacaklar + mini lead CRM masaüstü uygulaması",
   "main": "main.js",
   "license": "MIT",
   "scripts": {

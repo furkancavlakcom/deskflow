@@ -67,7 +67,7 @@ function bakim() {
     if (m.hatirlatma && !m.hatirlatildi && !m.bitti && m.hatirlatma <= simdi) {
       m.hatirlatildi = true;
       degisti = true;
-      bildir("Liste — Hatırlatma", m.metin);
+      bildir("DeskFlow — Hatırlatma", m.metin);
     }
   }
   // lead görüşme bildirimleri: 30 dk kala + tam saatinde
@@ -78,18 +78,18 @@ function bakim() {
       if (!l.uyarildi30 && l.gorusme > simdi && l.gorusme - simdi <= 30 * 60 * 1000) {
         l.uyarildi30 = true;
         degisti = true;
-        bildir("Liste — Görüşme yaklaşıyor", `${l.marka} — 30 dk sonra görüşme var`);
+        bildir("DeskFlow — Görüşme yaklaşıyor", `${l.marka} — 30 dk sonra görüşme var`);
       }
       if (!l.uyarildi0 && l.gorusme <= simdi) {
         l.uyarildi0 = true; l.uyarildi30 = true;
         degisti = true;
-        bildir("Liste — Görüşme zamanı", `${l.marka} görüşmesi ŞİMDİ`);
+        bildir("DeskFlow — Görüşme zamanı", `${l.marka} görüşmesi ŞİMDİ`);
       }
     }
     if (l.takip && !l.takipUyarildi && l.takip <= simdi) {
       l.takipUyarildi = true;
       degisti = true;
-      bildir("Liste — Takip zamanı", `${l.marka}${l.takipNot ? " — " + l.takipNot : ""}`);
+      bildir("DeskFlow — Takip zamanı", `${l.marka}${l.takipNot ? " — " + l.takipNot : ""}`);
     }
   }
   // arşivde 30 günü dolduranlar kalıcı temizlenir
@@ -373,7 +373,7 @@ ipcMain.on("sap-menu", () => {
 function tepsiKur() {
   const ikon = nativeImage.createFromPath(path.join(KOK, "ikon.png"));
   tray = new Tray(ikon.resize({ width: 16, height: 16 }));
-  tray.setToolTip("Liste");
+  tray.setToolTip("DeskFlow");
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: "Aç", click: () => { win.show(); win.focus(); } },
     { label: "Kenar okunu göster/gizle", click: () => {

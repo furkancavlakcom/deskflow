@@ -1,4 +1,4 @@
-# Liste — veri formatı ve dış araç entegrasyonu
+# DeskFlow — veri formatı ve dış araç entegrasyonu
 
 Electron masaüstü uygulaması. Sistem tepsisinde yaşar, pencere kapansa da hatırlatma bildirimi atar, Windows açılışında `--gizli` bayrağıyla tepside başlar.
 
