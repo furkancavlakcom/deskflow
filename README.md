@@ -20,7 +20,7 @@ Windows için sade, yerel bir günlük yapılacaklar + mini lead CRM uygulaması
 ## Kurulum
 
 ```bash
-git clone https://github.com/KULLANICI/liste.git
+git clone https://github.com/furkancavlakcom/liste.git
 cd liste
 npm install
 npm start
