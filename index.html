@@ -185,6 +185,8 @@
   .metin{word-wrap:break-word; white-space:pre-wrap; cursor:text; font-size:14.5px}
   .metin.kapali{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
   .madde.bitti .metin{text-decoration:line-through}
+  .madde.devirKart{opacity:.6; border-style:dashed}
+  .kutu.pasif{border-color:var(--cizgi2); background:none; cursor:default; flex:none}
   .devami{
     background:none; border:none; color:var(--vurgu); font-size:12px;
     padding:2px 0 0; display:none; transition:opacity .15s;
@@ -471,10 +473,12 @@ const ikon = {
   takvim: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
 };
 
-/* ---------- madde kartı ---------- */
-function maddeKarti(m){
+/* ---------- madde kartı ----------
+   devirBaglami: geçmiş bir güne bakılıyor ve bu iş o gün AÇIKTI ama sonra
+   başka güne devretti — salt okunur, soluk gösterilir. */
+function maddeKarti(m, devirBaglami = false){
   const el = document.createElement("div");
-  el.className = "madde" + (m.bitti ? " bitti" : "");
+  el.className = "madde" + (m.bitti ? " bitti" : "") + (devirBaglami ? " devirKart" : "");
 
   const kutu = document.createElement("button");
   kutu.className = "kutu";
@@ -589,16 +593,41 @@ function maddeKarti(m){
   dBtn.onclick = async () => { m.silindi = Date.now(); await kaydet(); cizHepsi(); };
   aletler.append(sBtn, dBtn);
 
+  if (devirBaglami){
+    /* o günün fotoğrafı: nereye gittiğini söyle, düzenleme yok */
+    const dv = document.createElement("div");
+    dv.className = "etiketler";
+    const r = document.createElement("span");
+    r.className = "rozet devir";
+    const h = koddanTarih(m.gun);
+    const nereye = gunFarki(bugunKodu(), m.gun) === 0 ? "bugüne" : `${h.getDate()} ${AYLAR[h.getMonth()]}'e`;
+    r.textContent = m.bitti ? `${nereye} devretti, orada bitirildi` : `${nereye} devretti`;
+    dv.appendChild(r);
+    govde.appendChild(dv);
+
+    const pasifKutu = document.createElement("div");
+    pasifKutu.className = "kutu pasif";
+    el.append(pasifKutu, govde);
+    return el;
+  }
+
   el.append(kutu, govde, aletler);
   return el;
 }
 
-function listeCiz(kap, gun, bosMesaj){
+function listeCiz(kap, gun, bosMesaj, gecmisMi = false){
   kap.innerHTML = "";
   const gunun = maddeler
     .filter(m => m.gun === gun && !m.silindi)
     .sort((a,b) => (a.bitti - b.bitti) || (a.olusturma - b.olusturma));
-  if (!gunun.length){
+  /* o gün açık olup sonradan devreden işler — geçmişin boş görünmemesi için */
+  const devredenler = gecmisMi
+    ? maddeler
+        .filter(m => !m.silindi && m.gun !== gun && (m.ilkGun || m.gun) <= gun && gun < m.gun)
+        .sort((a,b) => a.olusturma - b.olusturma)
+    : [];
+
+  if (!gunun.length && !devredenler.length){
     const b = document.createElement("div");
     b.className = "bos";
     b.innerHTML = ikon.bosKutu + bosMesaj;
@@ -606,6 +635,13 @@ function listeCiz(kap, gun, bosMesaj){
     return;
   }
   gunun.forEach(m => kap.appendChild(maddeKarti(m)));
+  if (devredenler.length){
+    const bas = document.createElement("div");
+    bas.className = "leadGrup";
+    bas.innerHTML = `<i style="background:#c9a227"></i>O GÜN AÇIKTI <small>· ${devredenler.length}</small>`;
+    kap.appendChild(bas);
+    devredenler.forEach(m => kap.appendChild(maddeKarti(m, true)));
+  }
 }
 
 /* ---------- dashboard ---------- */
@@ -689,7 +725,7 @@ function cizHepsi(){
   const fark = gunFarki(bugun, acikGun);
   const not = fark === -1 ? "dün" : fark === 0 ? "bugün" : `${-fark} gün önce`;
   document.getElementById("gTarih").textContent = `${uzunTarih(acikGun)} · ${not}`;
-  listeCiz(document.getElementById("gecmisListe"), acikGun, "Bu günde kayıt yok.");
+  listeCiz(document.getElementById("gecmisListe"), acikGun, "Bu günde kayıt yok.", true);
 
   dashboardCiz();
   silinenlerCiz();
