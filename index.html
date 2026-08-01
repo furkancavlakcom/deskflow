@@ -239,10 +239,19 @@
   .bos svg{display:block; margin:0 auto 12px; color:var(--cizgi2)}
 
   #buyut{
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,.88);
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.9);
     align-items:center; justify-content:center; z-index:50; cursor:zoom-out; padding:34px;
+    overflow:auto;
   }
-  #buyut img{max-width:100%; max-height:100%; border-radius:10px}
+  #buyut img{max-width:100%; max-height:100%; border-radius:10px; cursor:zoom-in}
+  /* gerçek boyut: ekrana sığdırma kalkar, kaydırarak okunur */
+  #buyut.tamBoyut{align-items:flex-start; justify-content:flex-start; cursor:default}
+  #buyut.tamBoyut img{max-width:none; max-height:none; cursor:zoom-out}
+  #buyutIpucu{
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    background:rgba(20,22,28,.94); border:1px solid var(--cizgi2); color:var(--soluk);
+    padding:7px 14px; border-radius:9px; font-size:12.5px; z-index:51; pointer-events:none;
+  }
 
   /* lead bölümü */
   #leadForm{
@@ -451,7 +460,7 @@
 
 </main>
 
-<div id="buyut"><img alt="büyütülmüş görsel"></div>
+<div id="buyut"><img alt="büyütülmüş görsel"><div id="buyutIpucu"></div></div>
 
 <script>
 /* ---------- yardımcılar ---------- */
@@ -546,11 +555,8 @@ function maddeKarti(m, devirBaglami = false){
       const im = document.createElement("img");
       im.src = "gorseller/" + ad;
       im.alt = "ekran görüntüsü";
-      im.onclick = () => {
-        const b = document.getElementById("buyut");
-        b.querySelector("img").src = im.src;
-        b.style.display = "flex";
-      };
+      im.title = "büyütmek için tıkla";
+      im.onclick = () => gorselAc(im.src);
       g.appendChild(im);
     });
     govde.appendChild(g);
@@ -844,6 +850,10 @@ document.addEventListener("paste", e => {
       kutu.className = "onizIt";
       const im = document.createElement("img");
       im.src = "gorseller/" + ad;
+      im.alt = "yapıştırılan görsel";
+      im.title = "büyütmek için tıkla";
+      im.style.cursor = "zoom-in";
+      im.onclick = () => gorselAc(im.src);
       const sil = document.createElement("button");
       sil.className = "onizSil"; sil.textContent = "×"; sil.title = "bu görseli çıkar";
       sil.onclick = () => { bekleyen = bekleyen.filter(x => x !== ad); kutu.remove(); onizTemizleTazele(); giris.focus(); };
@@ -868,7 +878,36 @@ function onizTemizleTazele(){
   kap.appendChild(b);
 }
 
-document.getElementById("buyut").onclick = () => document.getElementById("buyut").style.display = "none";
+/* ---------- görsel büyütme (ortak) ---------- */
+function gorselAc(src){
+  const b = document.getElementById("buyut");
+  const im = b.querySelector("img");
+  b.classList.remove("tamBoyut");
+  im.src = src;
+  b.style.display = "flex";
+  im.onload = () => {
+    // ekrana sığmıyorsa yakınlaştırma teklif et
+    const sigmiyor = im.naturalWidth > b.clientWidth - 68 || im.naturalHeight > b.clientHeight - 68;
+    document.getElementById("buyutIpucu").textContent = sigmiyor
+      ? "görsele tıkla: gerçek boyut · boşluğa tıkla veya Esc: kapat"
+      : "boşluğa tıkla veya Esc: kapat";
+  };
+}
+function gorselKapat(){
+  const b = document.getElementById("buyut");
+  b.style.display = "none";
+  b.classList.remove("tamBoyut");
+}
+document.getElementById("buyut").onclick = gorselKapat;
+document.querySelector("#buyut img").onclick = (e) => {
+  e.stopPropagation(); // modalı kapatma, yakınlaştır/uzaklaştır
+  const b = document.getElementById("buyut");
+  const tam = b.classList.toggle("tamBoyut");
+  document.getElementById("buyutIpucu").textContent = tam
+    ? "kaydırarak gez · görsele tıkla: küçült · Esc: kapat"
+    : "görsele tıkla: gerçek boyut · boşluğa tıkla veya Esc: kapat";
+  if (tam) b.scrollTo(0, 0);
+};
 
 /* ---------- lead bölümü (mini CRM) ---------- */
 const LEAD_DURUM = [
@@ -1204,7 +1243,7 @@ document.addEventListener("keydown", e => {
   const acikSatir = document.querySelector(".alarmSatir.acik");
   if (acikSatir){ acikSatir.classList.remove("acik"); return; }
   const b = document.getElementById("buyut");
-  if (b.style.display === "flex") { b.style.display = "none"; return; } // önce büyütülmüş görseli kapat
+  if (b.style.display === "flex") { gorselKapat(); return; } // önce büyütülmüş görseli kapat
   window.api.panelEsc(); // panel modundaysa pencereyi gizler
 });
 
