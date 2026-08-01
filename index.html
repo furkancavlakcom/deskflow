@@ -904,7 +904,14 @@ function leadKart(l){
   const tSil = document.createElement("button");
   tSil.className = "sil"; tSil.textContent = "kaldır";
   tSil.onclick = async () => { l.takip = null; l.takipNot = ""; await kaydet(); cizHepsi(); };
-  takipSatir.append(tInp, tNot, tKur, tSil);
+  const tKapat = document.createElement("button");
+  tKapat.className = "sil"; tKapat.textContent = "kapat";
+  tKapat.onclick = () => takipSatir.classList.remove("acik");
+  tNot.addEventListener("keydown", e => {
+    if (e.key === "Enter") tKur.click();
+    if (e.key === "Escape") { e.stopPropagation(); takipSatir.classList.remove("acik"); }
+  });
+  takipSatir.append(tInp, tNot, tKur, tSil, tKapat);
 
   /* rozetler: görüşme + takip + adımsız uyarısı */
   if (!leadKapali(l)){
@@ -971,16 +978,24 @@ function leadKart(l){
   nInp.type = "text"; nInp.placeholder = "not — ne konuşuldu, ne söz verildi...";
   const nEkle = document.createElement("button");
   nEkle.className = "kur"; nEkle.textContent = "not ekle";
+  const notKapat = () => { notSatir.classList.remove("acik"); nInp.value = ""; };
   const notKaydet = async () => {
     const m = nInp.value.trim();
-    if (!m) return;
+    if (!m) { notKapat(); return; }   // boşken bas = vazgeç
     l.notlar = l.notlar || [];
     l.notlar.push({ t: Date.now(), metin: m });
+    notKapat();
     await kaydet(); cizHepsi();
   };
+  const nVazgec = document.createElement("button");
+  nVazgec.className = "sil"; nVazgec.textContent = "kapat";
+  nVazgec.onclick = notKapat;
   nEkle.onclick = notKaydet;
-  nInp.addEventListener("keydown", e => { if (e.key === "Enter") notKaydet(); });
-  notSatir.append(nInp, nEkle);
+  nInp.addEventListener("keydown", e => {
+    if (e.key === "Enter") notKaydet();
+    if (e.key === "Escape") { e.stopPropagation(); notKapat(); }  // pencereyi gizlemesin
+  });
+  notSatir.append(nInp, nEkle, nVazgec);
 
   govde.append(takipSatir, notSatir);
 
@@ -1134,6 +1149,9 @@ function silinenlerCiz(){
 
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
+  // önce açık bir düzenleme satırı varsa onu kapat (pencereyi gizleme)
+  const acikSatir = document.querySelector(".alarmSatir.acik");
+  if (acikSatir){ acikSatir.classList.remove("acik"); return; }
   const b = document.getElementById("buyut");
   if (b.style.display === "flex") { b.style.display = "none"; return; } // önce büyütülmüş görseli kapat
   window.api.panelEsc(); // panel modundaysa pencereyi gizler
