@@ -20,9 +20,15 @@ Günün ve haftanın fotoğrafı: bekleyen iş sayısı, günlük ilerleme, haft
 
 ### Bugün
 
-Her gün otomatik olarak yeni bir sayfa açılır. Bitmeyen işler ertesi güne kendiliğinden devreder ve kaç gündür ötelendiğini söyler. Ekran görüntüsünü **Ctrl+V** ile doğrudan görevin içine yapıştırabilirsin.
+Her gün otomatik olarak yeni bir sayfa açılır. Bitmeyen işler ertesi güne kendiliğinden devreder ve kaç gündür ötelendiğini söyler. 3 günü geçen bir iş kendini sorgulatır — *"hâlâ gerekli mi?"* — tıklayınca ya sayacı sıfırlarsın ya da silersin. Ekran görüntüsünü **Ctrl+V** ile doğrudan görevin içine yapıştırabilirsin.
 
 ![Bugün](docs/bugun.png)
+
+### Geçmiş
+
+Herhangi bir güne dönüp o günün fotoğrafını görürsün: o gün bitirdiklerin ve o gün açık olup sonradan devreden işler ayrı ayrı. Devreden kartlar salt okunurdur — geçmişi yanlışlıkla değiştiremezsin.
+
+![Geçmiş](docs/gecmis.png)
 
 ### Lead — mini CRM
 
@@ -34,7 +40,8 @@ Görüşmeler aşamalara göre gruplanır: Yeni → Görüşüldü → Teklif il
 
 ## Özellikler
 
-- **Günlük sayfa** — her gün sıfırdan başlar; bitmeyen işler devreder, "3 gündür taşınıyor" rozetiyle gözüne batar
+- **Günlük sayfa** — her gün sıfırdan başlar; bitmeyen işler devreder, "3 gündür taşınıyor" rozetiyle gözüne batar ve *hâlâ gerekli mi* diye sorar (Bullet Journal'ın "migration" fikri: yeniden yazmaya değmiyorsa muhtemelen o kadar önemli değildir)
+- **Geçmiş** — geçmiş günlerin fotoğrafı: o gün ne bitmiş, ne açık kalıp devretmiş
 - **Ekran görüntüsü yapıştırma** — Ctrl+V ile görsel doğrudan göreve gömülür
 - **Hatırlatmalar** — görev başına tarih/saat; uygulama tepsideyken, pencere kapalıyken bile bildirim düşer
 - **Kenar oku** — ekranın kenarında duran ok: tıkla → panel açılır, sürükle → istediğin kenara/monitöre taşı. Kısayol: `Ctrl+Alt+L`

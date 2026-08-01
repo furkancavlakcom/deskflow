@@ -186,6 +186,12 @@
   .metin.kapali{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
   .madde.bitti .metin{text-decoration:line-through}
   .madde.devirKart{opacity:.6; border-style:dashed}
+  .rozet.devir.eskimis{
+    color:#ffb35c; background:rgba(255,150,60,.12);
+    cursor:pointer; transition:background .15s;
+  }
+  .rozet.devir.eskimis:hover{background:rgba(255,150,60,.22)}
+  .sorguSatir{margin-top:9px}
   .kutu.pasif{border-color:var(--cizgi2); background:none; cursor:default; flex:none}
   .devami{
     background:none; border:none; color:var(--vurgu); font-size:12px;
@@ -551,13 +557,35 @@ function maddeKarti(m, devirBaglami = false){
     r.innerHTML = ikon.zil + `<span>${ayniGun ? "" : t.getDate()+" "+AYLAR[t.getMonth()]+" "}${pad(t.getHours())}:${pad(t.getMinutes())}${gecti ? " · geçti" : ""}</span>`;
     etiketler.appendChild(r);
   }
+  /* devir rozeti — 3+ günde kendini sorgulatır (Bullet Journal "migration" mantığı:
+     yeniden yazmaya değmiyorsa muhtemelen o kadar önemli değildir) */
+  let sorgu = null;
   if (m.ilkGun && m.ilkGun !== m.gun && !m.bitti){
+    const kacGun = gunFarki(m.ilkGun, m.gun);
+    const eski = kacGun >= 3 && !devirBaglami;
     const r = document.createElement("span");
-    r.className = "rozet devir";
-    r.innerHTML = `<span>↻ ${gunFarki(m.ilkGun, m.gun)} gündür taşınıyor</span>`;
+    r.className = "rozet devir" + (eski ? " eskimis" : "");
+    r.innerHTML = `<span>↻ ${kacGun} gündür taşınıyor${eski ? " · hâlâ gerekli mi?" : ""}</span>`;
+    if (eski){
+      r.title = "tıkla: hâlâ gerekli mi?";
+      sorgu = document.createElement("div");
+      sorgu.className = "alarmSatir sorguSatir";
+      const kalsin = document.createElement("button");
+      kalsin.className = "kur"; kalsin.textContent = "Gerekli, sayacı sıfırla";
+      kalsin.onclick = async () => { m.ilkGun = m.gun; await kaydet(); cizHepsi(); };
+      const sil = document.createElement("button");
+      sil.className = "sil"; sil.textContent = "Gerek yok, sil";
+      sil.onclick = async () => { m.silindi = Date.now(); await kaydet(); cizHepsi(); };
+      const kapat = document.createElement("button");
+      kapat.className = "sil"; kapat.textContent = "sonra";
+      kapat.onclick = () => sorgu.classList.remove("acik");
+      sorgu.append(kalsin, sil, kapat);
+      r.onclick = () => sorgu.classList.toggle("acik");
+    }
     etiketler.appendChild(r);
   }
   if (etiketler.children.length) govde.appendChild(etiketler);
+  if (sorgu) govde.appendChild(sorgu);
 
   const alarm = document.createElement("div");
   alarm.className = "alarmSatir";
