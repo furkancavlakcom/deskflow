@@ -142,7 +142,7 @@
   #girisKap{
     background:var(--kart); border:1px solid var(--cizgi); border-radius:var(--r);
     padding:13px 16px; margin-bottom:6px; transition:border-color .15s;
-    display:flex; align-items:center; gap:11px;
+    display:flex; align-items:center; gap:11px; flex-wrap:wrap;
   }
   #girisKap:focus-within{border-color:var(--vurgu)}
   #girisKap svg{color:var(--cok-soluk)}
@@ -152,16 +152,26 @@
     line-height:1.5; max-height:132px; padding:0;
   }
   #giris::placeholder{color:var(--cok-soluk)}
-  #onizleme{display:flex; gap:10px; flex-wrap:wrap}
-  .onizIt{position:relative}
-  .onizIt img{height:68px; border-radius:8px; border:1px solid var(--cizgi2); display:block}
+  /* önizleme: giriş kutusunun ALTINDA tam satır — geniş ekran görüntüleri kutuyu taşırmasın */
+  #onizleme{display:flex; gap:10px; flex-wrap:wrap; width:100%; align-items:flex-start}
+  #onizleme:not(:empty){margin-top:12px; padding-top:12px; border-top:1px solid var(--cizgi)}
+  .onizIt{position:relative; flex:none}
+  .onizIt img{
+    height:68px; width:auto; max-width:120px; object-fit:cover; object-position:left top;
+    border-radius:8px; border:1px solid var(--cizgi2); display:block; background:var(--kart2);
+  }
   .onizSil{
-    position:absolute; top:-7px; right:-7px; width:19px; height:19px;
+    position:absolute; top:-7px; right:-7px; width:19px; height:19px; z-index:2;
     border-radius:50%; background:var(--kirmizi); color:#fff; border:2px solid var(--kart);
     font-size:12px; line-height:1; padding:0;
     display:flex; align-items:center; justify-content:center;
   }
   .onizSil:hover{background:#ff7580}
+  #onizTemizle{
+    align-self:center; background:none; border:1px solid var(--cizgi2); color:var(--soluk);
+    border-radius:8px; padding:6px 12px; font-size:12.5px; transition:color .15s,border-color .15s;
+  }
+  #onizTemizle:hover{color:var(--yazi); border-color:var(--soluk)}
   #ipucu{font-size:11.5px; color:var(--cok-soluk); margin:0 4px 20px}
 
   .madde{
@@ -836,14 +846,27 @@ document.addEventListener("paste", e => {
       im.src = "gorseller/" + ad;
       const sil = document.createElement("button");
       sil.className = "onizSil"; sil.textContent = "×"; sil.title = "bu görseli çıkar";
-      sil.onclick = () => { bekleyen = bekleyen.filter(x => x !== ad); kutu.remove(); giris.focus(); };
+      sil.onclick = () => { bekleyen = bekleyen.filter(x => x !== ad); kutu.remove(); onizTemizleTazele(); giris.focus(); };
       kutu.append(im, sil);
       document.getElementById("onizleme").appendChild(kutu);
+      onizTemizleTazele();
       giris.focus();
     };
     fr.readAsDataURL(f);
   });
 });
+
+/* yapıştırılan görselleri tek hamlede kaldırma butonu (2+ görselde belirir) */
+function onizTemizleTazele(){
+  const kap = document.getElementById("onizleme");
+  const eski = document.getElementById("onizTemizle");
+  if (eski) eski.remove();
+  if (kap.querySelectorAll(".onizIt").length < 2) return;
+  const b = document.createElement("button");
+  b.id = "onizTemizle"; b.textContent = "hepsini kaldır";
+  b.onclick = () => { bekleyen = []; kap.innerHTML = ""; giris.focus(); };
+  kap.appendChild(b);
+}
 
 document.getElementById("buyut").onclick = () => document.getElementById("buyut").style.display = "none";
 

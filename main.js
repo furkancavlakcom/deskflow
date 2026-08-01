@@ -92,6 +92,16 @@ function bakim() {
       bildir("DeskFlow — Takip zamanı", `${l.marka}${l.takipNot ? " — " + l.takipNot : ""}`);
     }
   }
+  // yapıştırılıp hiç gönderilmemiş yetim görseller (1 günden eski) diskte birikmesin
+  try {
+    const kullanilan = new Set(v.maddeler.flatMap((m) => m.gorseller || []));
+    for (const dosya of fs.readdirSync(GORSEL)) {
+      if (kullanilan.has(dosya)) continue;
+      const bilgi = fs.statSync(path.join(GORSEL, dosya));
+      if (simdi - bilgi.mtimeMs > 86400000) fs.unlinkSync(path.join(GORSEL, dosya));
+    }
+  } catch {}
+
   // arşivde 30 günü dolduranlar kalıcı temizlenir
   const onceki = v.maddeler.length + v.leadler.length;
   v.maddeler = v.maddeler.filter((m) => !m.silindi || simdi - m.silindi < 30 * 86400000);
